@@ -1,0 +1,146 @@
+---
+title: "Doug Visuals"
+author: "Mason"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(dplyr.width = Inf,digits=3,scipen = 999999999)
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(knitr)
+library(readr)
+library(kableExtra)
+library(corrplot)
+library(summarytools)
+library(reshape2)
+library(tidyverse)
+library(readr)
+library(scales) # ! important
+library(Rfast)
+library(readr)
+library(RColorBrewer)
+library(corrplot)
+library(GPArotation)
+library(psych)
+library(kableExtra)
+
+wrapper <- function(x, ...) 
+{
+  paste(strwrap(x, ...), collapse = "\n")
+}
+```
+
+
+#### R 
+
+```{r cleaning}
+
+# data cleaning
+
+## Import Raw Data
+df.DougScore.raw <- read_csv("data/DougScore  - DougScore.csv",
+                                col_types = cols(X17 = col_skip()),
+                      skip=1,skip_empty_rows = TRUE)
+
+
+
+## Cleaning up variable Names
+
+df.Doug<-   suppressWarnings(df.DougScore.raw %>% rename(Year = X1,
+                                      Model=X3,
+                                      Manufacturer=X2,
+                                      Weekend=X9,
+                                      Daily=X15,
+                                      DOUGSCORE=X16,
+                                      City=X18,
+                                      State=X19,
+                                      Country=X20))
+
+
+
+# Removing double header
+df.Doug=df.Doug[2:nrow(df.Doug),]
+
+
+## selecting only question items
+df_corrs=select_if(df.Doug, is.numeric)
+
+
+# transform to long form
+df.m <- melt(df_corrs)
+
+
+ggplot(df.m) +  geom_density(aes(x = value,
+     colour = variable),adjust=2) + labs(x = NULL)+ theme_classic()+ggtitle("Density Distributions for all individual items")
+
+
+
+raw_names_q=names(df_corrs)
+## Individual Items
+
+for(i in 1:ncol(df_corrs)){
+ 
+print(raw_names_q[i]) 
+  
+df=subset(df.m,variable==raw_names_q[i])
+
+p=ggplot(df,aes(value))+
+      geom_histogram(binwidth = 1,fill = "white",color = "black")+
+      geom_density(aes(y=1 * ..count..))+ ggtitle(paste0("Frequency for question ",i))+labs(subtitle=wrapper(raw_names_q[i], width = 90))
+print(p)
+}
+
+```
+
+
+## Descriptive Table
+
+```{r summarytable}
+dfSummary(df_corrs)
+```
+
+
+## Correlation
+```{r}
+
+## excluding compound items
+#df_corrs_items=select(df_corrs,-Year,-Daily,-Weekend,-DOUGSCORE)
+
+## selecting all items (including x2 barrel)
+df=df_corrs#_ndb
+
+
+## extracting correlation
+cor_df=cor(df)
+
+M=corrplot(cor_df)
+p.mat <- cor.mtest(df)$p
+
+col <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
+
+
+#corrplot.mixed(M)
+
+
+
+
+#print(raw_names[18:38])
+corrplot(M, method = "color",
+         type = "upper", number.cex = .7,
+         addCoef.col = "black", # Add coefficient of correlation
+         tl.col = "black", tl.srt = 90, # Text label color and rotation
+         # Combine with significance
+         #  p.mat = p.mat, sig.level = 0.01, insig = "blank", 
+         # hide correlation coefficient on the principal diagonal
+         diag = FALSE, col = col(20))
+
+df_items=select(df_corrs,-Year,-Daily,-Weekend,-DOUGSCORE)
+
+
+omega(df_items)
+```
+
