@@ -60,8 +60,6 @@ df.Doug<-   suppressWarnings(df.DougScore.raw %>% rename(Year = X1,
                                       State=X19,
                                       Country=X20))
 
-
-
 # Removing double header
 df.Doug=df.Doug[2:nrow(df.Doug),]
 
@@ -110,7 +108,7 @@ dfSummary(df_corrs)
 ## excluding compound items
 #df_corrs_items=select(df_corrs,-Year,-Daily,-Weekend,-DOUGSCORE)
 
-## selecting all items (including x2 barrel)
+## selecting all items
 df=df_corrs#_ndb
 
 
