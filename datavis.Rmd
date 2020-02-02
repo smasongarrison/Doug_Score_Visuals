@@ -7,7 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-options(dplyr.width = Inf,digits=3,scipen = 999999999)
+options(dplyr.width = Inf,digits = 3,scipen = 999999999)
 library(tidyverse)
 library(dplyr)
 library(ggplot2)
@@ -17,16 +17,14 @@ library(kableExtra)
 library(corrplot)
 library(summarytools)
 library(reshape2)
-library(tidyverse)
-library(readr)
 library(scales) # ! important
 library(Rfast)
-library(readr)
 library(RColorBrewer)
-library(corrplot)
 library(GPArotation)
 library(psych)
 library(kableExtra)
+library(MASS)
+library(car)
 
 wrapper <- function(x, ...) 
 {
@@ -41,14 +39,15 @@ wrapper <- function(x, ...)
 
 # data cleaning
 
-## Import Raw Data
+## Import Raw Data from doug
 df.DougScore.raw <- read_csv("data/DougScore  - DougScore.csv",
-                                col_types = cols(X17 = col_skip()),
-                      skip=1,skip_empty_rows = TRUE)
+                             col_types = cols(X17 = col_skip()),
+                             skip = 1,
+                             skip_empty_rows = TRUE)
 
 
 
-## Cleaning up variable Names
+### Cleaning up variable Names
 
 df.Doug<-   suppressWarnings(df.DougScore.raw %>% rename(Year = X1,
                                       Model=X3,
@@ -60,8 +59,10 @@ df.Doug<-   suppressWarnings(df.DougScore.raw %>% rename(Year = X1,
                                       State=X19,
                                       Country=X20))
 
-# Removing double header
+### Removing double header
 df.Doug=df.Doug[2:nrow(df.Doug),]
+
+
 
 
 ## selecting only question items
@@ -99,6 +100,7 @@ print(p)
 
 ```{r summarytable}
 dfSummary(df_corrs)
+
 ```
 
 
@@ -136,9 +138,20 @@ corrplot(M, method = "color",
          # hide correlation coefficient on the principal diagonal
          diag = FALSE, col = col(20))
 
-df_items=select(df_corrs,-Year,-Daily,-Weekend,-DOUGSCORE)
+
+scatterplotMatrix(df_corrs)
+
+# Omega
+#df_items=select(df_corrs,vars=c(-Year,-Daily,-Weekend,-DOUGSCORE))
 
 
-omega(df_items)
+#omega(df_items)
 ```
 
+# Discriminant Analysis
+
+```{r}
+
+
+
+```
